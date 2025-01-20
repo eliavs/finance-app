@@ -35,7 +35,10 @@
                         </div>
                     </div>
                     <div id="columns-list" class="row g-3"></div>
-                    <button id="process-columns" class="btn btn-success mt-3">Process Selected Columns</button>
+                    <div class="button-group">
+                        <button id="process-columns" class="btn btn-success mt-3">Process Selected Columns</button>
+                        <button id="define-categories" class="btn btn-primary mt-3 ms-2">Define Categories</button>
+                    </div>
                 </div>
 
                 <div id="output" class="mt-4"></div>
@@ -44,6 +47,23 @@
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="category-mapper-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Define Categories</h2>
+            <div class="column-selector">
+                <label>Select Column:</label>
+                <select id="category-column-select">
+                    <option value="">Select a column...</option>
+                </select>
+            </div>
+            <div id="category-mappings"></div>
+            <div class="modal-buttons">
+                <button id="save-categories" class="btn btn-success">Save Categories</button>
+                <button id="close-modal" class="btn btn-secondary">Cancel</button>
             </div>
         </div>
     </div>

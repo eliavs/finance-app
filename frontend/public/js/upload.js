@@ -221,4 +221,105 @@ document.addEventListener('DOMContentLoaded', () => {
             fileNameDisplay.textContent = `Selected file: ${file.name}`;
         }
     }
+
+    // Show modal when "Define Categories" is clicked
+    document.getElementById('define-categories').addEventListener('click', () => {
+        const modal = document.getElementById('category-mapper-modal');
+        const columnSelect = document.getElementById('category-column-select');
+        
+        // Populate column select with available columns
+        columnSelect.innerHTML = '<option value="">Select a column...</option>' +
+            columns.map(col => `<option value="${col}">${col}</option>`).join('');
+        
+        modal.style.display = 'block';
+    });
+
+    // Handle column selection
+    document.getElementById('category-column-select').addEventListener('change', async (e) => {
+        const column = e.target.value;
+        if (!column) return;
+        
+        const mappingsContainer = document.getElementById('category-mappings');
+        
+        // Get unique values from the selected column
+        const uniqueValues = [...new Set(data.map(row => row[column]))];
+        
+        // Create mapping interface
+        mappingsContainer.innerHTML = `
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>Original Value</th>
+                        <th>Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${uniqueValues.map(value => `
+                        <tr>
+                            <td>${value}</td>
+                            <td>
+                                <select class="form-select category-select" data-value="${value}">
+                                    <option value="">Select category...</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Personal">Personal</option>
+                                    <option value="Investment">Investment</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    });
+
+    // Handle save categories
+    document.getElementById('save-categories').addEventListener('click', async () => {
+        const column = document.getElementById('category-column-select').value;
+        const mappings = {};
+        
+        document.querySelectorAll('.category-select').forEach(select => {
+            const originalValue = select.dataset.value;
+            const category = select.value;
+            if (category) {
+                mappings[originalValue] = category;
+            }
+        });
+        
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('column', column);
+        formData.append('mappings', JSON.stringify(mappings));
+        
+        try {
+            const response = await fetch('http://localhost:8000/api/define-categories/', {
+                method: 'POST',
+                body: formData,
+            });
+            
+            if (response.ok) {
+                const result = await response.blob();
+                // Create download link
+                const url = window.URL.createObjectURL(result);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'processed_with_categories.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                // Close modal
+                document.getElementById('category-mapper-modal').style.display = 'none';
+            } else {
+                showError('Failed to process categories');
+            }
+        } catch (error) {
+            showError(error.message);
+        }
+    });
+
+    // Close modal
+    document.getElementById('close-modal').addEventListener('click', () => {
+        document.getElementById('category-mapper-modal').style.display = 'none';
+    });
 });
