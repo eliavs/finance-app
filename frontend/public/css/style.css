@@ -1,0 +1,20 @@
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.file-upload-wrapper {
+    position: relative;
+}
+
+.upload-area {
+    border: 2px dashed #ccc !important;
+    transition: border-color 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #0d6efd !important;
+}
+
+.border-primary {
+    border-color: #0d6efd !important;
+}
