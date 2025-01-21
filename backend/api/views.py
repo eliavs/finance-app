@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.http import HttpResponse
 from rest_framework import status
 from .serializers import CSVUploadSerializer, ColumnProcessSerializer
 from .utils import get_csv_columns, process_csv_columns
 import json
+import pandas as pd
 
 # Sample in-memory data
 items = [
@@ -68,4 +70,31 @@ class ProcessColumnsView(APIView):
         except Exception as e:
             return Response({
                 "error": f"Error processing columns: {str(e)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class DefineCategoriesView(APIView):
+    def post(self, request):
+        try:
+            file = request.FILES.get('file')
+            column = request.POST.get('column')
+            mappings = json.loads(request.POST.get('mappings'))
+            
+            # Read the CSV file
+            df = pd.read_csv(file)
+            
+            # Create new category column
+            new_column_name = f'{column}_category'
+            df[new_column_name] = df[column].map(mappings)
+            
+            # Create response file
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="processed_with_categories.csv"'
+            
+            df.to_csv(response, index=False)
+            return response
+            
+        except Exception as e:
+            return Response({
+                "error": str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
